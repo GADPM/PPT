@@ -1,0 +1,46 @@
+<!-- jogo/templates/jogo/menu_inicial.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Inicial</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .button {
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bem-vindo ao Pedra, Papel, Tesoura</h1>
+    <a href="{% url 'jogar' %}"><button class="button">Iniciar o Jogo</button></a>
+    <a href="#"><button class="button">Ver Créditos</button></a>
+    <a href="#"><button class="button">Ver História</button></a>
+</body>
+</html>

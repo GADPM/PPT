@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créditos</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.2rem;
+            color: #555;
+            max-width: 800px;
+            margin-bottom: 30px;
+        }
+        a {
+            text-decoration: none;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Créditos</h1>
+    <p>Este jogo foi criado por [Seu Nome] como um projeto de aprendizado em Django. Agradecemos a todos os envolvidos no desenvolvimento de jogos clássicos como Pedra, Papel e Tesoura!</p>
+    <a href="{% url 'menu_inicial' %}">Voltar ao Menu
