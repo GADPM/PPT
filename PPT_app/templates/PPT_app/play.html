@@ -1,0 +1,334 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogar - Pedra, Papel e Tesoura</title>
+  <!-- Carrega uma fonte do Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Estilos gerais e fundo */
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #2980b9, #6dd5fa);
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    /* Container para os elementos flutuantes */
+    .floating-elements {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .floating-element {
+      position: absolute;
+      border-radius: 50%;
+      /* A cor será definida via JS para cores aleatórias */
+      animation: floatAnimation ease-in-out infinite;
+      opacity: 0.8;
+    }
+    @keyframes floatAnimation {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(50px, -30px); }
+      100% { transform: translate(0, 0); }
+    }
+    /* Container principal para o conteúdo do jogo */
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 600px;
+      width: 90%;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 2.5em;
+    }
+    p {
+      margin: 10px 0;
+    }
+    /* Área das escolhas */
+    .choices {
+      display: flex;
+      justify-content: space-around;
+      margin: 30px 0;
+    }
+    .choice-item {
+      text-align: center;
+    }
+    /* Esconde os radio buttons reais */
+    .choice-item input[type="radio"] {
+      display: none;
+    }
+    /* Estilo dos botões de escolha */
+    .choice-label {
+      display: inline-block;
+      padding: 15px 25px;
+      border: 2px solid #3498db;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+      font-size: 1.2em;
+      font-weight: 700;
+      color: #3498db;
+    }
+    .choice-label:hover {
+      background: #3498db;
+      color: #fff;
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    .choice-item input[type="radio"]:checked + .choice-label {
+      background: #3498db;
+      color: #fff;
+      transform: scale(1.1);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    /* Container do botão "Jogar": sempre renderizado; se user_choice existir, inicia oculto */
+    <!-– Remova o bloco condicional; use inline style para ocultar se necessário ––>
+    <div class="btn-container" id="submitContainer" {% if user_choice %}style="display: none;"{% endif %}>
+      <!-- Este container sempre estará presente no DOM -->
+    </div>
+    .btn-container {
+      margin-top: 20px;
+    }
+    .btn-container button {
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.2em;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .btn-container button:hover {
+      background: #c0392b;
+      transform: scale(1.05);
+    }
+    /* Área de resultados com animação de fadeIn */
+    .results {
+      margin-top: 30px;
+      padding: 20px;
+      border: 2px solid #3498db;
+      border-radius: 10px;
+      background: #f9f9f9;
+      color: #333;
+      animation: fadeIn 0.5s ease-out;
+    }
+    .results h3 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+      color: #e74c3c;
+    }
+    .results p {
+      font-size: 1.2em;
+      margin: 5px 0;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Botões de ação para "Voltar ao Menu" e "Jogar Novamente" */
+    .action-buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .action-buttons button {
+      background: #3498db;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1em;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .action-buttons button:hover {
+      background: #2980b9;
+      transform: scale(1.05);
+    }
+    /* Confetti (para efeito de vitória) */
+    .confetti {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: red;
+      opacity: 0;
+      transform: rotate(0deg);
+      animation: confetti 3s ease-out forwards;
+    }
+    @keyframes confetti {
+      0% {
+        opacity: 1;
+        transform: translateY(0) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(300px) rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Container para os 50 objetos flutuantes -->
+  <div class="floating-elements" id="floatingContainer"></div>
+
+  <!-- Container principal do jogo -->
+  <div class="container">
+    <!-- Container para confetti (apenas se o usuário ganhar) -->
+    <div id="confettiContainer" class="confetti"></div>
+
+    <h1>Jogar Pedra, Papel e Tesoura</h1>
+    <p style="font-size: 1.1em;">Dificuldade: {{ difficulty|title }}</p>
+    
+    <form method="post" id="gameForm">
+      {% csrf_token %}
+      <!-- Preserva a dificuldade selecionada -->
+      <input type="hidden" name="difficulty" value="{{ difficulty }}">
+      
+      <div class="choices">
+        {% for choice in choices %}
+          <div class="choice-item">
+            <input type="radio" id="{{ choice.name }}" name="choice" value="{{ choice.name|lower }}" {% if user_choice %} disabled {% endif %} required>
+            <label for="{{ choice.name }}" class="choice-label">{{ choice.name }}</label>
+          </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Container do botão "Jogar": sempre presente; se user_choice existir, inicia oculto -->
+      <div class="btn-container" id="submitContainer" {% if user_choice %}style="display: none;"{% endif %}>
+        <button type="submit">Jogar</button>
+      </div>
+    </form>
+    
+    {% if user_choice %}
+      <div class="results" id="resultSection">
+        <h3>{{ result }}</h3>
+        <p>Sua escolha: <strong>{{ user_choice|title }}</strong></p>
+        <p>Escolha do computador: <strong>{{ computer_choice|title }}</strong></p>
+        <div class="action-buttons">
+          <button id="backToMenuBtn">Voltar ao Menu</button>
+          <button id="playAgainBtn">Jogar Novamente</button>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Criação de 50 objetos flutuantes
+      const container = document.getElementById("floatingContainer");
+      for (let i = 0; i < 50; i++) {
+        let obj = document.createElement("div");
+        obj.classList.add("floating-element");
+        
+        // Define posição aleatória (top e left em porcentagem)
+        obj.style.top = Math.random() * 100 + "%";
+        obj.style.left = Math.random() * 100 + "%";
+        
+        // Tamanho base de 10px multiplicado por um fator aleatório entre 1 e 10 (resultando em 10px a 100px)
+        let baseSize = 10;
+        let multiplier = Math.random() * 9 + 1;
+        let size = baseSize * multiplier;
+        obj.style.width = size + "px";
+        obj.style.height = size + "px";
+        
+        // Duração da animação aleatória entre 3s e 8s
+        let duration = Math.random() * (8 - 3) + 3;
+        obj.style.animationDuration = duration + "s";
+        
+        // Cores vivas usando HSL: saturação entre 90-100% e luminosidade 50%
+        let hue = Math.floor(Math.random() * 360);
+        let saturation = Math.floor(Math.random() * 11) + 90;
+        let lightness = 50;
+        obj.style.background = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        
+        container.appendChild(obj);
+      }
+      
+      // Se o resultado for "Você ganhou!", dispara o efeito de confetti
+      {% if result and result == "Você ganhou!" %}
+      function createConfetti() {
+        const confettiContainer = document.getElementById('confettiContainer');
+        for (let i = 0; i < 50; i++) {
+          let confetti = document.createElement('div');
+          confetti.classList.add('confetti-piece');
+          confetti.style.background = '#' + Math.floor(Math.random() * 16777215).toString(16);
+          confetti.style.left = Math.random() * 100 + '%';
+          confetti.style.top = '-10px';
+          confetti.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+          confetti.style.animationDelay = Math.random() * 0.5 + 's';
+          confettiContainer.appendChild(confetti);
+        }
+      }
+      createConfetti();
+      {% endif %}
+      
+      // Eventos para os botões de ação
+      const backToMenuBtn = document.getElementById('backToMenuBtn');
+      const playAgainBtn = document.getElementById('playAgainBtn');
+      if (backToMenuBtn) {
+        backToMenuBtn.addEventListener('click', function() {
+          // Redireciona para o menu (supondo que a URL do menu tenha o nome 'menu')
+          window.location.href = "{% url 'menu' %}";
+        });
+      }
+      if (playAgainBtn) {
+        playAgainBtn.addEventListener('click', function() {
+          // Limpa a área de resultados
+          const resultSection = document.getElementById('resultSection');
+          if (resultSection) {
+            resultSection.style.display = 'none';
+          }
+          // Limpa o container de confetti
+          const confettiContainer = document.getElementById('confettiContainer');
+          if (confettiContainer) {
+            confettiContainer.innerHTML = "";
+          }
+          // Reseta o formulário para que o usuário possa refazer a jogada
+          const form = document.getElementById('gameForm');
+          if (form) {
+            form.reset();
+          }
+          // Reabilita os inputs (remove o atributo disabled)
+          document.querySelectorAll('input[name="choice"]').forEach(function(input) {
+            input.disabled = false;
+          });
+          // Exibe novamente o container do botão "Jogar"
+          const submitContainer = document.getElementById('submitContainer');
+          if (submitContainer) {
+            submitContainer.style.display = 'block';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
